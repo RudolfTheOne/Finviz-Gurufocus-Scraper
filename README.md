@@ -5,6 +5,10 @@ The function `scrape_finviz` accepts a `list` of tickers and returns a pandas `d
 
 <img src="/resource/scrape-finviz.JPG" alt="">
 
+Extended version fetches Gurufocus' Piotroski F-Score, Altman Z-Score and Beneish M-Score appending them as last 3 columns in the resulting dataset.
+
+<img src="resource/scrape-gurufocus.png" alt="">
+
 ## Usage
 The list of tickers may be in `uppercase` or `lower case`
 ```python
