@@ -3,11 +3,13 @@ from bs4 import BeautifulSoup
 import pandas as pd
 import progressbar
 import re
-
-import time
-
+from datetime import datetime
+import pygsheets
+# set Google Sheets variables
+import user_specific_variables
 
 def scrape_finviz(symbols):
+
     # Get Column Header
     req = requests.get("https://finviz.com/quote.ashx?t=FB")
     soup = BeautifulSoup(req.content, 'html.parser')
@@ -19,9 +21,9 @@ def scrape_finviz(symbols):
         out = out + [x.text for x in td]
 
     # Adding actual headers: Ticker, Sector, Sub-sector and country plus all from the finviz table
-    # and then 3 from GuruFocus
+    # and then 5 from GuruFocus
     guru_ls = ['Piotroski F-Score', 'Altman Z-Score', 'Beneish M-Score']
-    ls = ['Ticker', 'Sector', 'Sub-Sector', 'Country'] + out[::2] + guru_ls
+    ls = ['Ticker', 'Sector', 'Sub-Sector', 'Country'] + out[::2] + guru_ls + ['ROIC', 'WACC']
 
     dict_ls = {k: ls[k] for k in range(len(ls))}
     df = pd.DataFrame()
@@ -70,33 +72,57 @@ def scrape_finviz(symbols):
             except:
                 scores.append('')
 
+        try:
+            roic_value = re.search(r'ROIC \d+\.\d+', guru_soup.getText()).group(0)
+            scores.append(roic_value.replace('ROIC ', ''))
+            wacc_value = re.search(r'WACC \d+\.\d+', guru_soup.getText()).group(0)
+            scores.append(wacc_value.replace('WACC ', ''))
+        except:
+            scores.append('')
+            scores.append('')
+
         df_len = len(df) - 1
 
         df.loc[df_len, guru_ls[0]] = scores[0]
         df.loc[df_len, guru_ls[1]] = scores[1]
         df.loc[df_len, guru_ls[2]] = scores[2]
+        df.loc[df_len, ls[-2]] = scores[3]
+        df.loc[df_len, ls[-1]] = scores[4]
 
     p.finish()
     df = df.rename(columns=dict_ls)
-    df.to_csv('output.csv')
+
+    gc = pygsheets.authorize(service_file=user_specific_variables.json_file)
+    sheet = gc.open_by_key(user_specific_variables.sheet_key)
+
+    worksheet = sheet.worksheet_by_title(user_specific_variables.worksheet_title)
+
+    worksheet.clear(start='A1')
+    worksheet.set_dataframe(df, start='A1', nan='')
+
+    # Write output CSV from dataframe as a backup to local working directory as outputYYYY-MM-DD.csv
+
+    output_file_with_date = 'output' + datetime.today().strftime('%Y-%m-%d') +'.csv'
+    df.to_csv(output_file_with_date, index=False)
 
     return (df)
 
+data = scrape_finviz(['msft'])
 
-data = scrape_finviz(['BKNG', 'REGN', 'ceo', 'SPGI', 'AAPL', 'FB', 'GOOGL', 'ISRG', 'INTC', 'ITW', 'MSFT', 'anss', 'ROP',
-                     'ACN', 'IPGP', 'bsm', 'GWW', 'CAT', 'mcd', 'SPR', 'MMM', 'LLY', 'csl', 'MNST', 'hon', 'TWTR',
-                     'NVDA', 'pep', 'JNJ', 'tdg', 'rost', 'IBM', 'BRK-A', 'ndsn', 'OSK', 'ABBV', 'ssw', 'CLX', 'leco',
-                     'POOL',
-                     'lanc', 'expd', 'epam', 'GRMN', 'bti', 'lulu', 'CINF', 'sne', 'chrw', 'DIS', 'NEE', 'PSX', 'apd',
-                     'mplx', 'ev', 'SHW', 'cb', 'EEFT', 'CVX', 'lin', 'PFE', 'MKC', 'PPG', 'AFL', 'ess', 'jag', 'DOV',
-                     'brc', 'WEN', 'chd', 'eca', 'EMR', 'bf-b', 'CMCSA', 'GD', 'cmg', 'CPRI', 'ori', 'TGT', 'wst',
-                     'AMZN', 'ED', 'PNR', 'ADP', 'WM', 'BEN', 'ECL', 'alb', 'tjx', 'BEAT', 'pii', 'ko', 'fast', 'utx',
-                     'cf',
-                     'FRT', 'WBA', 'FCX', 'CCL', 'jw-a', 'VFC', 'CAH', 'ato', 'EXPE', 'nav', 'HRL', 'nvt', 'skt', 'msa',
-                     'sjm', 'dci', 'WMT', 'ful', 'SYY', 'nfg', 'SWK', 'cdk', 'GPC', 'bpy', 'pbct', 'NNN', 'bkh', 'awr',
-                     'O', 'atr', 'son', 'LOW', 'LEG', 'XOM', 'byd', 'ABT', 'BA', 'abm', 'NUE', 'UAA', 'bll', 'BDX',
-                     'crm', 'sfix', 'PG', 'CL', 'ugi', 'cwt', 'wtr', 'njr', 'adm', 'MDT', 'ktb', 'mdp', 'mdu', 'tds',
-                     'QSR',
-                     'rpm', 'FLR', 'NKTR', 'KHC', 'CSX', 'NSC', 'AOS', 'KMB', 'appf', 'NRG', 'ipg', 'T', 'CC', 'anet',
-                     'CTAS', 'amcr', 'rtn', 'lmt', 'hii', 'lulu', 'NOC', 'oxy', 'cop', 'eog', 'pxd', 'cxo', 'bmi',
-                     'fele', 'hp', 'jkhy', 'mgee', 'mgrc', 'mo', 'nwn', 'ph', 'scl', 'sjw', 'syk', 'tnc', 'tr', 'uvv'])
+#data = scrape_finviz(['BKNG', 'REGN', 'ceo', 'SPGI', 'AAPL', 'FB', 'GOOGL', 'ISRG', 'INTC', 'ITW', 'MSFT', 'anss', 'ROP',
+#                    'ACN', 'IPGP', 'bsm', 'GWW', 'CAT', 'mcd', 'SPR', 'MMM', 'LLY', 'csl', 'MNST', 'hon', 'TWTR',
+#                    'NVDA', 'pep', 'JNJ', 'tdg', 'rost', 'IBM', 'BRK-A', 'ndsn', 'OSK', 'ABBV', 'ssw', 'CLX', 'leco',
+#                    'POOL',
+#                    'lanc', 'expd', 'epam', 'GRMN', 'bti', 'lulu', 'CINF', 'sne', 'chrw', 'DIS', 'NEE', 'PSX', 'apd',
+#                    'mplx', 'ev', 'SHW', 'cb', 'EEFT', 'CVX', 'lin', 'PFE', 'MKC', 'PPG', 'AFL', 'ess', 'jag', 'DOV',
+#                    'brc', 'WEN', 'chd', 'eca', 'EMR', 'bf-b', 'CMCSA', 'GD', 'cmg', 'CPRI', 'ori', 'TGT', 'wst',
+#                    'AMZN', 'ED', 'PNR', 'ADP', 'WM', 'BEN', 'ECL', 'alb', 'tjx', 'BEAT', 'pii', 'ko', 'fast', 'utx',
+#                    'cf',
+#                    'FRT', 'WBA', 'FCX', 'CCL', 'jw-a', 'VFC', 'CAH', 'ato', 'EXPE', 'nav', 'HRL', 'nvt', 'skt', 'msa',
+#                    'sjm', 'dci', 'WMT', 'ful', 'SYY', 'nfg', 'SWK', 'cdk', 'GPC', 'bpy', 'pbct', 'NNN', 'bkh', 'awr',
+#                    'O', 'atr', 'son', 'LOW', 'LEG', 'XOM', 'byd', 'ABT', 'BA', 'abm', 'NUE', 'UAA', 'bll', 'BDX',
+#                    'crm', 'sfix', 'PG', 'CL', 'ugi', 'cwt', 'wtr', 'njr', 'adm', 'MDT', 'ktb', 'mdp', 'mdu', 'tds',
+#                    'QSR',
+#                    'rpm', 'FLR', 'NKTR', 'KHC', 'CSX', 'NSC', 'AOS', 'KMB', 'appf', 'NRG', 'ipg', 'T', 'CC', 'anet',
+#                    'CTAS', 'amcr', 'rtn', 'lmt', 'hii', 'lulu', 'NOC', 'oxy', 'cop', 'eog', 'pxd', 'cxo', 'bmi',
+#                    'fele', 'hp', 'jkhy', 'mgee', 'mgrc', 'mo', 'nwn', 'ph', 'scl', 'sjw', 'syk', 'tnc', 'tr', 'uvv'])

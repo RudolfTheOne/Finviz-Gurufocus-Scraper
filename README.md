@@ -5,7 +5,7 @@ The function `scrape_finviz` accepts a `list` of tickers and returns a pandas `d
 
 <img src="/resource/scrape-finviz.JPG" alt="">
 
-Extended version fetches Gurufocus' Piotroski F-Score, Altman Z-Score and Beneish M-Score appending them as last 3 columns in the resulting dataset.
+Extended version fetches Gurufocus' Piotroski F-Score, Altman Z-Score and Beneish M-Score along with two values of ROIC and WACC, appending them as last 5 columns in the resulting dataset.
 
 <img src="resource/scrape-gurufocus.png" alt="">
 
@@ -15,6 +15,23 @@ The list of tickers may be in `uppercase` or `lower case`
 # data is a pandas DataFrame
 data=scrape_finviz(['FB','INGN'])
 ```
+
+the file user-specific-variables has following data:
+```python
+json_file = '/Users/username/your_json_file'
+sheet_key = 'your_sheet_key_taken_from_address_bar'
+worksheet_title = 'your_worksheet_title'
+```
+
+## Google Sheets integration
+This code uses pygsheets library to access google sheets.
+Enable API and create a Service Account at https://console.developers.google.com/apis
+
+Then, allow freshly created account to edit your sheet and download service key as JSON file.
+
+To locate sheet's key, use long string from the address bar:
+
+<img src="resource/screen-shot-2018-02-26-at-101033-pm.png" alt="">
 
 ## Multiprocessing
 
