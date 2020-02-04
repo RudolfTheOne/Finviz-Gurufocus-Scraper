@@ -101,13 +101,12 @@ def scrape_finviz(symbols):
     worksheet.set_dataframe(df, start='A1', nan='')
 
     # Write output CSV from dataframe as a backup to local working directory as outputYYYY-MM-DD.csv
-
     output_file_with_date = 'output' + datetime.today().strftime('%Y-%m-%d') +'.csv'
     df.to_csv(output_file_with_date, index=False)
 
     return (df)
 
-data = scrape_finviz(['msft'])
+data = scrape_finviz(['msft', 'fb', 'aapl'])
 
 #data = scrape_finviz(['BKNG', 'REGN', 'ceo', 'SPGI', 'AAPL', 'FB', 'GOOGL', 'ISRG', 'INTC', 'ITW', 'MSFT', 'anss', 'ROP',
 #                    'ACN', 'IPGP', 'bsm', 'GWW', 'CAT', 'mcd', 'SPR', 'MMM', 'LLY', 'csl', 'MNST', 'hon', 'TWTR',
