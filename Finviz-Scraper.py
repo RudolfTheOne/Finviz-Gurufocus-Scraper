@@ -47,7 +47,7 @@ def scrape_finviz(symbols):
         if symbols[j].find('-'):
             guru_symbol = symbols[j].replace('-', '.')
         guru_req = requests.get("https://www.gurufocus.com/stock/" + guru_symbol,headers=hdr)
-        if guru_req.status_code != 200 or guru_req.status_code != 403:
+        if guru_req.status_code != 200 and guru_req.status_code != 403:
             continue
         guru_soup = BeautifulSoup(guru_req.content, 'html.parser')
 
