@@ -11,7 +11,11 @@ import user_specific_variables
 def scrape_finviz(symbols):
 
     # Get Column Header
-    req = requests.get("https://finviz.com/quote.ashx?t=FB")
+    hdr = {'User-Agent': 'Mozilla/5.0'}
+    req = requests.get("https://finviz.com/quote.ashx?t=FB",headers=hdr)
+    if req.status_code == 403:
+        print("Error 403")
+        exit(1)
     soup = BeautifulSoup(req.content, 'html.parser')
     table = soup.find_all(lambda tag: tag.name == 'table')
     rows = table[8].findAll(lambda tag: tag.name == 'tr')
@@ -33,17 +37,17 @@ def scrape_finviz(symbols):
         p.update(j / len(symbols) * 100)
 
         # Initialize FinViz parsing
-        req = requests.get("https://finviz.com/quote.ashx?t=" + symbols[j])
+        req = requests.get("https://finviz.com/quote.ashx?t=" + symbols[j],headers=hdr)
         if req.status_code != 200:
             continue
         soup = BeautifulSoup(req.content, 'html.parser')
         table = soup.find_all(lambda tag: tag.name == 'table')
 
         # Initialize GuruFocus table parsing (3 values for all the symbols)
-        if (symbols[j].find('-')):
+        if symbols[j].find('-'):
             guru_symbol = symbols[j].replace('-', '.')
-        guru_req = requests.get("https://www.gurufocus.com/stock/" + guru_symbol)
-        if guru_req.status_code != 200:
+        guru_req = requests.get("https://www.gurufocus.com/stock/" + guru_symbol,headers=hdr)
+        if guru_req.status_code != 200 or guru_req.status_code != 403:
             continue
         guru_soup = BeautifulSoup(guru_req.content, 'html.parser')
 
@@ -106,22 +110,23 @@ def scrape_finviz(symbols):
 
     return (df)
 
-data = scrape_finviz(['msft', 'fb', 'aapl'])
+#data = scrape_finviz(['msft', 'fb', 'aapl'])
 
-#data = scrape_finviz(['BKNG', 'REGN', 'ceo', 'SPGI', 'AAPL', 'FB', 'GOOGL', 'ISRG', 'INTC', 'ITW', 'MSFT', 'anss', 'ROP',
-#                    'ACN', 'IPGP', 'bsm', 'GWW', 'CAT', 'mcd', 'SPR', 'MMM', 'LLY', 'csl', 'MNST', 'hon', 'TWTR',
-#                    'NVDA', 'pep', 'JNJ', 'tdg', 'rost', 'IBM', 'BRK-A', 'ndsn', 'OSK', 'ABBV', 'ssw', 'CLX', 'leco',
-#                    'POOL',
-#                    'lanc', 'expd', 'epam', 'GRMN', 'bti', 'lulu', 'CINF', 'sne', 'chrw', 'DIS', 'NEE', 'PSX', 'apd',
-#                    'mplx', 'ev', 'SHW', 'cb', 'EEFT', 'CVX', 'lin', 'PFE', 'MKC', 'PPG', 'AFL', 'ess', 'jag', 'DOV',
-#                    'brc', 'WEN', 'chd', 'eca', 'EMR', 'bf-b', 'CMCSA', 'GD', 'cmg', 'CPRI', 'ori', 'TGT', 'wst',
-#                    'AMZN', 'ED', 'PNR', 'ADP', 'WM', 'BEN', 'ECL', 'alb', 'tjx', 'BEAT', 'pii', 'ko', 'fast', 'utx',
-#                    'cf',
-#                    'FRT', 'WBA', 'FCX', 'CCL', 'jw-a', 'VFC', 'CAH', 'ato', 'EXPE', 'nav', 'HRL', 'nvt', 'skt', 'msa',
-#                    'sjm', 'dci', 'WMT', 'ful', 'SYY', 'nfg', 'SWK', 'cdk', 'GPC', 'bpy', 'pbct', 'NNN', 'bkh', 'awr',
-#                    'O', 'atr', 'son', 'LOW', 'LEG', 'XOM', 'byd', 'ABT', 'BA', 'abm', 'NUE', 'UAA', 'bll', 'BDX',
-#                    'crm', 'sfix', 'PG', 'CL', 'ugi', 'cwt', 'wtr', 'njr', 'adm', 'MDT', 'ktb', 'mdp', 'mdu', 'tds',
-#                    'QSR',
-#                    'rpm', 'FLR', 'NKTR', 'KHC', 'CSX', 'NSC', 'AOS', 'KMB', 'appf', 'NRG', 'ipg', 'T', 'CC', 'anet',
-#                    'CTAS', 'amcr', 'rtn', 'lmt', 'hii', 'lulu', 'NOC', 'oxy', 'cop', 'eog', 'pxd', 'cxo', 'bmi',
-#                    'fele', 'hp', 'jkhy', 'mgee', 'mgrc', 'mo', 'nwn', 'ph', 'scl', 'sjw', 'syk', 'tnc', 'tr', 'uvv'])
+data = scrape_finviz(['BKNG', 'REGN', 'ceo', 'SPGI', 'AAPL', 'FB', 'GOOGL', 'ISRG', 'INTC', 'ITW', 'MSFT', 'anss', 'ROP',
+                    'ACN', 'IPGP', 'bsm', 'GWW', 'CAT', 'mcd', 'SPR', 'MMM', 'LLY', 'csl', 'MNST', 'hon', 'TWTR',
+                    'NVDA', 'pep', 'JNJ', 'tdg', 'rost', 'IBM', 'BRK-A', 'ndsn', 'OSK', 'ABBV', 'ssw', 'CLX', 'leco',
+                    'POOL',
+                    'lanc', 'expd', 'epam', 'GRMN', 'bti', 'lulu', 'CINF', 'sne', 'chrw', 'DIS', 'NEE', 'PSX', 'apd',
+                    'mplx', 'ev', 'SHW', 'cb', 'EEFT', 'CVX', 'lin', 'PFE', 'MKC', 'PPG', 'AFL', 'ess', 'jag', 'DOV',
+                    'brc', 'WEN', 'chd', 'eca', 'EMR', 'bf-b', 'CMCSA', 'GD', 'cmg', 'CPRI', 'ori', 'TGT', 'wst',
+                    'AMZN', 'ED', 'PNR', 'ADP', 'WM', 'BEN', 'ECL', 'alb', 'tjx', 'BEAT', 'pii', 'ko', 'fast', 'utx',
+                    'cf',
+                    'FRT', 'WBA', 'FCX', 'CCL', 'jw-a', 'VFC', 'CAH', 'ato', 'EXPE', 'nav', 'HRL', 'nvt', 'skt', 'msa',
+                    'sjm', 'dci', 'WMT', 'ful', 'SYY', 'nfg', 'SWK', 'cdk', 'GPC', 'bpy', 'pbct', 'NNN', 'bkh', 'awr',
+                    'O', 'atr', 'son', 'LOW', 'LEG', 'XOM', 'byd', 'ABT', 'BA', 'abm', 'NUE', 'UAA', 'bll', 'BDX',
+                    'crm', 'sfix', 'PG', 'CL', 'ugi', 'cwt', 'wtr', 'njr', 'adm', 'MDT', 'ktb', 'mdp', 'mdu', 'tds',
+                    'QSR', 'TMO',
+                    'rpm', 'FLR', 'NKTR', 'KHC', 'CSX', 'NSC', 'AOS', 'KMB', 'appf', 'NRG', 'ipg', 'T', 'CC', 'anet',
+                    'CTAS', 'amcr', 'rtx', 'lmt', 'hii', 'lulu', 'NOC', 'oxy', 'cop', 'eog', 'pxd', 'cxo', 'bmi',
+                    'fele', 'hp', 'jkhy', 'mgee', 'mgrc', 'mo', 'nwn', 'ph', 'scl', 'sjw', 'syk', 'tnc', 'tr', 'uvv',
+                    'ENPH', 'SEDG'])
