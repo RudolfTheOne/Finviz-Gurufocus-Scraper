@@ -18,7 +18,7 @@ def scrape_finviz(symbols):
         exit(1)
     soup = BeautifulSoup(req.content, 'html.parser')
     table = soup.find_all(lambda tag: tag.name == 'table')
-    rows = table[8].findAll(lambda tag: tag.name == 'tr')
+    rows = table[7].findAll(lambda tag: tag.name == 'tr')
     out = []
     for i in range(len(rows)):
         td = rows[i].find_all('td')
@@ -52,13 +52,14 @@ def scrape_finviz(symbols):
         guru_soup = BeautifulSoup(guru_req.content, 'html.parser')
 
         # Process tables from BS
-        rows = table[6].findAll(lambda tag: tag.name == 'tr')
+        rows = table[5].findAll(lambda tag: tag.name == 'tr')
         sector = []
         for i in range(len(rows)):
             td = rows[i].find_all('td')
             sector = sector + [x.text for x in td]
-        sector = sector[2].split('|')
-        rows = table[8].findAll(lambda tag: tag.name == 'tr')
+        if(sector):
+            sector = sector[2].split('|')
+        rows = table[7].findAll(lambda tag: tag.name == 'tr')
         out = []
         for i in range(len(rows)):
             td = rows[i].find_all('td')
@@ -129,4 +130,6 @@ data = scrape_finviz(['BKNG', 'REGN', 'ceo', 'SPGI', 'AAPL', 'FB', 'GOOGL', 'ISR
                     'rpm', 'FLR', 'NKTR', 'KHC', 'CSX', 'NSC', 'AOS', 'KMB', 'appf', 'NRG', 'ipg', 'T', 'CC', 'anet',
                     'CTAS', 'amcr', 'rtx', 'lmt', 'hii', 'lulu', 'NOC', 'oxy', 'cop', 'eog', 'pxd', 'cxo', 'bmi',
                     'fele', 'hp', 'jkhy', 'mgee', 'mgrc', 'mo', 'nwn', 'ph', 'scl', 'sjw', 'syk', 'tnc', 'tr', 'uvv',
-                    'ENPH', 'SEDG'])
+                    'ENPH', 'SEDG', 'ACI', 'baba', 'ADSK', 'AMAT', 'AMD', 'AVGO', 'BBBY', 'CHWY', 'CIEN', 'CRWD',
+                    'DOCU', 'FSLR', 'IRBT', 'LRCX', 'NOW', 'OKTA', 'PCG', 'PYPL', 'QCOM', 'SHOP', 'TSM', 'TTD', 'WORK',
+                    'WW', 'ZM', 'ZS', 'TTWO'])
