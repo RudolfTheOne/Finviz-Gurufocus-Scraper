@@ -5,8 +5,13 @@ import progressbar
 import re
 from datetime import datetime
 import pygsheets
+import csv
 # set Google Sheets variables
 import user_specific_variables
+
+# variable
+CONFIG_SYMBOLS = []
+CONFIG_COLUMN_SYMBOL_IX = 0
 
 def scrape_finviz(symbols):
 
@@ -113,23 +118,14 @@ def scrape_finviz(symbols):
 
 #data = scrape_finviz(['msft', 'fb', 'aapl'])
 
-data = scrape_finviz(['BKNG', 'REGN', 'ceo', 'SPGI', 'AAPL', 'FB', 'GOOGL', 'ISRG', 'INTC', 'ITW', 'MSFT', 'anss', 'ROP',
-                    'ACN', 'IPGP', 'bsm', 'GWW', 'CAT', 'mcd', 'SPR', 'MMM', 'LLY', 'csl', 'MNST', 'hon', 'TWTR',
-                    'NVDA', 'pep', 'JNJ', 'tdg', 'rost', 'IBM', 'BRK-A', 'ndsn', 'OSK', 'ABBV', 'ssw', 'CLX', 'leco',
-                    'POOL',
-                    'lanc', 'expd', 'epam', 'GRMN', 'bti', 'lulu', 'CINF', 'sne', 'chrw', 'DIS', 'NEE', 'PSX', 'apd',
-                    'mplx', 'ev', 'SHW', 'cb', 'EEFT', 'CVX', 'lin', 'PFE', 'MKC', 'PPG', 'AFL', 'ess', 'jag', 'DOV',
-                    'brc', 'WEN', 'chd', 'eca', 'EMR', 'bf-b', 'CMCSA', 'GD', 'cmg', 'CPRI', 'ori', 'TGT', 'wst',
-                    'AMZN', 'ED', 'PNR', 'ADP', 'WM', 'BEN', 'ECL', 'alb', 'tjx', 'BEAT', 'pii', 'ko', 'fast', 'utx',
-                    'cf',
-                    'FRT', 'WBA', 'FCX', 'CCL', 'jw-a', 'VFC', 'CAH', 'ato', 'EXPE', 'nav', 'HRL', 'nvt', 'skt', 'msa',
-                    'sjm', 'dci', 'WMT', 'ful', 'SYY', 'nfg', 'SWK', 'cdk', 'GPC', 'bpy', 'pbct', 'NNN', 'bkh', 'awr',
-                    'O', 'atr', 'son', 'LOW', 'LEG', 'XOM', 'byd', 'ABT', 'BA', 'abm', 'NUE', 'UAA', 'bll', 'BDX',
-                    'crm', 'sfix', 'PG', 'CL', 'ugi', 'cwt', 'wtr', 'njr', 'adm', 'MDT', 'ktb', 'mdp', 'mdu', 'tds',
-                    'QSR', 'TMO',
-                    'rpm', 'FLR', 'NKTR', 'KHC', 'CSX', 'NSC', 'AOS', 'KMB', 'appf', 'NRG', 'ipg', 'T', 'CC', 'anet',
-                    'CTAS', 'amcr', 'rtx', 'lmt', 'hii', 'lulu', 'NOC', 'oxy', 'cop', 'eog', 'pxd', 'cxo', 'bmi',
-                    'fele', 'hp', 'jkhy', 'mgee', 'mgrc', 'mo', 'nwn', 'ph', 'scl', 'sjw', 'syk', 'tnc', 'tr', 'uvv',
-                    'ENPH', 'SEDG', 'ACI', 'baba', 'ADSK', 'AMAT', 'AMD', 'AVGO', 'BBBY', 'CHWY', 'CIEN', 'CRWD',
-                    'DOCU', 'FSLR', 'IRBT', 'LRCX', 'NOW', 'OKTA', 'PCG', 'PYPL', 'QCOM', 'SHOP', 'TSM', 'TTD', 'WORK',
-                    'WW', 'ZM', 'ZS', 'TTWO'])
+with open('tickers.csv', newline='') as csvfile:
+    reader = csv.reader(csvfile, delimiter=',', quotechar='"')
+    linenumber = 1
+    for lineContent in reader:
+        if linenumber > 1:
+            CONFIG_SYMBOLS.append(lineContent[CONFIG_COLUMN_SYMBOL_IX])
+        linenumber = linenumber + 1
+    print(CONFIG_SYMBOLS)
+
+data = scrape_finviz(CONFIG_SYMBOLS)
+
